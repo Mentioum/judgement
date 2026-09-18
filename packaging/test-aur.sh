@@ -15,7 +15,7 @@ runuser -u builder -- makepkg --printsrcinfo > actual.srcinfo
 diff <(sed '/^[[:space:]]*$/d; s/^[[:space:]]*//' actual.srcinfo | sort) \
      <(sed '/^[[:space:]]*$/d; s/^[[:space:]]*//' /workspace/dist/packages/.SRCINFO | sort)
 mkdir extracted
-bsdtar -xf judgement-bin-*.pkg.tar.zst -C extracted
+bsdtar -xf "judgement-bin-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst" -C extracted
 test -f extracted/usr/share/licenses/judgement-bin/LICENSE
 ./extracted/usr/bin/judgement version
 ./extracted/usr/bin/judgement validate --input /workspace/examples/request.json

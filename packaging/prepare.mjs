@@ -44,6 +44,10 @@ for (const [key, value] of Object.entries({ URL: url, VERSION: version, SHA256: 
   formula = formula.replaceAll(`@@${key}@@`, value);
 }
 writeFileSync(join(output, 'judgement.rb'), formula);
-copyFileSync(join(dist, 'aur/judgement-bin.pkgbuild'), join(output, 'PKGBUILD'));
-copyFileSync(join(dist, 'aur/judgement-bin.srcinfo'), join(output, '.SRCINFO'));
+// GoReleaser's AUR configuration has no options field. Preserve the already
+// stripped release binary and avoid generating an empty debug package.
+const pkgbuild = readFileSync(join(dist, 'aur/judgement-bin.pkgbuild'), 'utf8');
+writeFileSync(join(output, 'PKGBUILD'), pkgbuild + "\noptions=('!strip' '!debug')\n");
+const srcinfo = readFileSync(join(dist, 'aur/judgement-bin.srcinfo'), 'utf8');
+writeFileSync(join(output, '.SRCINFO'), srcinfo.replace('pkgname =', '\toptions = !strip\n\toptions = !debug\npkgname ='));
 console.log(`Prepared npm, Homebrew, and AUR packages for ${version} in ${output}`);
