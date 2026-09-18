@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+* Replace manual release packaging with GoReleaser OSS, producing versioned
+  archives and checksums for Linux, macOS, and Windows on amd64 and arm64.
+* Verify snapshot packaging and an extracted CLI in CI. Tagged builds continue
+  to create draft releases for maintainer review.
+
 ## 0.1.1 — 2026-09-18
 
 * Reject incomplete TypeSafe evaluations and model lists before reporting success.

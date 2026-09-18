@@ -45,6 +45,13 @@ the public TypeSafe client should keep working when another adapter is added.
 
 ## Releases
 
-Update the CLI version and changelog, run CI, then create a `v*` tag. The release
-workflow tests the tag and packages binaries for Linux, macOS, and Windows with
-checksums. A maintainer publishes the resulting draft release after review.
+Packaging uses GoReleaser OSS. Run `goreleaser check` and
+`goreleaser release --snapshot --clean` to build all six archives locally without
+publishing. CI checks this path and smoke-tests an extracted Linux binary.
+
+Update the default `Version` in `internal/cli/cli.go` and the changelog, run CI,
+then create a `v*` tag. GoReleaser injects the tag version into release binaries;
+the source default keeps `go install` consistent. The release workflow tests the
+tag and creates a draft with binaries and checksums. A maintainer publishes it
+after review. See [the release guide](docs/releases.md) for readiness checks and
+the package-manager plan.
