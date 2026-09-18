@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-09-18
+
+* Reject incomplete TypeSafe evaluations and model lists before reporting success.
+* Allow interruption while the CLI waits for stdin.
+* Isolate CLI provider calls behind a two-method internal adapter. TypeSafe
+  remains the only implemented provider; command syntax is unchanged.
+
 ## 0.1.0 — 2026-09-18
 
 Initial release:

@@ -14,6 +14,11 @@ This is an independent, unofficial client. It is not affiliated with TypeSafe AI
 Jev returns structured decisions; your agent writes the scripts and controls the
 workflow. Judgement does not generate or execute model-supplied code.
 
+TypeSafe is the only implemented provider today. The CLI keeps provider calls
+behind a small internal adapter so another provider can be added without
+rewriting input handling or batching. A custom base URL supports compatible
+TypeSafe endpoints; it does not translate other providers' APIs.
+
 ## Install
 
 Requires Go 1.23 or newer.

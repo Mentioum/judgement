@@ -17,7 +17,7 @@ import (
 	judgement "github.com/Mentioum/judgement"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.1"
 const help = `judgement — Jev decisions for agents and scripts
 
 Commands:
@@ -64,6 +64,10 @@ type options struct {
 }
 
 func Run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer) int {
+	return runWithBackend(ctx, args, in, out, errOut, newBackend)
+}
+
+func runWithBackend(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer, connect backendFactory) int {
 	if len(args) == 0 || args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
 		fmt.Fprint(out, help)
 		return 0
@@ -139,6 +143,11 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer
 	if command == "evaluate" || command == "validate" {
 		var err error
 		r, err = loadRequest(o, in)
+		if ctx.Err() != nil {
+			f, code := classify(ctx.Err())
+			_ = writeJSON(errOut, map[string]any{"error": f}, false)
+			return code
+		}
 		if err != nil {
 			return fail(errOut, "input", err, 2)
 		}
@@ -146,7 +155,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer
 			return emit(map[string]any{"valid": true, "request": r})
 		}
 	}
-	client, err := judgement.NewClient(judgement.Config{APIKey: os.Getenv("TYPESAFE_API_KEY"), BaseURL: o.base, Timeout: o.timeout, MaxRetries: o.retries})
+	client, err := connect(o)
 	if err != nil {
 		return fail(errOut, "configuration", err, 2)
 	}
@@ -300,7 +309,7 @@ type batchResult struct {
 }
 
 // Bounded windows limit memory and in-flight work while preserving input order.
-func batch(ctx context.Context, client *judgement.Client, o options, in io.Reader, out, errOut io.Writer) int {
+func batch(ctx context.Context, client backend, o options, in io.Reader, out, errOut io.Writer) int {
 	var input io.Reader = in
 	if o.input != "-" {
 		f, err := os.Open(o.input)
@@ -317,6 +326,11 @@ func batch(ctx context.Context, client *judgement.Client, o options, in io.Reade
 		lines := make([][]byte, 0, o.concurrency)
 		for len(lines) < o.concurrency && scanner.Scan() {
 			lines = append(lines, bytes.Clone(scanner.Bytes()))
+		}
+		if ctx.Err() != nil {
+			f, c := classify(ctx.Err())
+			_ = writeJSON(errOut, map[string]any{"error": f}, false)
+			return c
 		}
 		if len(lines) == 0 {
 			break

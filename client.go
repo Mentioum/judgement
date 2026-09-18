@@ -109,7 +109,14 @@ func (c *Client) EvaluateRaw(ctx context.Context, r Request) (json.RawMessage, e
 	if err != nil {
 		return nil, err
 	}
-	return c.do(ctx, http.MethodPost, "/systemone", b)
+	raw, err := c.do(ctx, http.MethodPost, "/systemone", b)
+	if err != nil {
+		return nil, err
+	}
+	if err := validateEvaluation(raw, r); err != nil {
+		return nil, err
+	}
+	return raw, nil
 }
 func (c *Client) ListModels(ctx context.Context) (*ModelsResponse, error) {
 	raw, err := c.ListModelsRaw(ctx)
@@ -123,7 +130,20 @@ func (c *Client) ListModels(ctx context.Context) (*ModelsResponse, error) {
 	return &result, nil
 }
 func (c *Client) ListModelsRaw(ctx context.Context) (json.RawMessage, error) {
-	return c.do(ctx, http.MethodGet, "/models", nil)
+	raw, err := c.do(ctx, http.MethodGet, "/models", nil)
+	if err != nil {
+		return nil, err
+	}
+	var response ModelsResponse
+	if err := json.Unmarshal(raw, &response); err != nil || response.Models == nil {
+		return nil, errors.New("API response must contain a models array")
+	}
+	for _, model := range response.Models {
+		if model.Name == "" {
+			return nil, errors.New("API response contains a model without a name")
+		}
+	}
+	return raw, nil
 }
 
 func (c *Client) do(ctx context.Context, method, path string, body []byte) (json.RawMessage, error) {
