@@ -1,0 +1,25 @@
+class Judgement < Formula
+  desc "Structured AI decisions for agents and scripts"
+  homepage "https://github.com/Mentioum/judgement"
+  url "@@URL@@"
+  version "@@VERSION@@"
+  sha256 "@@SHA256@@"
+  license "MIT"
+
+  depends_on "go" => :build
+
+  def install
+    ENV["CGO_ENABLED"] = "0"
+    ldflags = "-s -w -X github.com/Mentioum/judgement/internal/cli.Version=#{version}"
+    system "go", "build", *std_go_args(ldflags: ldflags), "./cmd/judgement"
+  end
+
+  test do
+    assert_equal version.to_s, JSON.parse(shell_output("#{bin}/judgement version"))["version"]
+    (testpath/"request.json").write <<~JSON
+      {"state":"A test","questions":{"ok":{"type":"noul","instructions":"Is this a test?"}}}
+    JSON
+    result = JSON.parse(shell_output("#{bin}/judgement validate --input #{testpath}/request.json"))
+    assert_equal true, result["valid"]
+  end
+end

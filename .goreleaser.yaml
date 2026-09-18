@@ -32,6 +32,27 @@ archives:
 checksum:
   name_template: checksums.txt
 
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: tar.gz
+
+# Generate these alongside the draft; publish only after the release is public.
+aurs:
+  - name: judgement-bin
+    ids: [binaries]
+    homepage: https://github.com/Mentioum/judgement
+    description: Structured AI decisions for agents and scripts
+    license: MIT
+    skip_upload: true
+    depends: [ca-certificates]
+    provides: [judgement]
+    conflicts: [judgement]
+    package: |-
+      install -Dm755 "./judgement" "${pkgdir}/usr/bin/judgement"
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/judgement-bin/LICENSE"
+      install -Dm644 "./README.md" "${pkgdir}/usr/share/doc/judgement/README.md"
+
 snapshot:
   version_template: "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
 

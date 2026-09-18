@@ -25,3 +25,16 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Attach package-manager files to the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node packaging/prepare.mjs
+          npm pack ./dist/packages/npm --pack-destination ./dist/packages --ignore-scripts
+          (cd dist/packages && sha256sum *.tgz judgement.rb PKGBUILD .SRCINFO > package-checksums.txt)
+          gh release upload "$RELEASE_TAG" dist/packages/*.tgz dist/packages/judgement.rb dist/packages/PKGBUILD dist/packages/.SRCINFO dist/packages/package-checksums.txt

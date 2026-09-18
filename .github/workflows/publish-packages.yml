@@ -1,0 +1,86 @@
+name: Publish packages
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published stable release tag (for example v0.2.0)
+        required: true
+        type: string
+      channel:
+        description: Package manager to update
+        required: true
+        type: choice
+        options: [npm, homebrew, aur]
+permissions:
+  contents: read
+concurrency:
+  group: publish-${{ inputs.channel }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GH_REPO: Mentioum/judgement
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - name: Download reviewed packages from a public release
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          gh release view "$RELEASE_TAG" --json isDraft,isPrerelease | jq -e '.isDraft == false and .isPrerelease == false'
+          gh release download "$RELEASE_TAG" --dir packages --pattern 'mentioum-judgement-*.tgz' --pattern judgement.rb --pattern PKGBUILD --pattern .SRCINFO --pattern package-checksums.txt
+          (cd packages && sha256sum --check package-checksums.txt)
+          tar -xOf packages/*.tgz package/package.json | jq -e --arg version "${RELEASE_TAG#v}" '.version == $version and .name == "@mentioum/judgement"'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: inputs.channel == 'npm'
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Publish npm with trusted publishing
+        if: inputs.channel == 'npm'
+        run: npm publish packages/*.tgz --access public
+      - name: Update Homebrew tap
+        if: inputs.channel == 'homebrew'
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo 'Configure HOMEBREW_TAP_TOKEN first.' >&2; exit 1; }
+          gh auth setup-git
+          gh repo clone Mentioum/homebrew-tap homebrew-tap -- --depth 1
+          mkdir -p homebrew-tap/Formula
+          cp packages/judgement.rb homebrew-tap/Formula/judgement.rb
+          cd homebrew-tap
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/judgement.rb
+          if ! git diff --cached --quiet; then
+            git commit -m "Update judgement to $RELEASE_TAG"
+            git push origin HEAD
+          fi
+      - name: Update AUR package
+        if: inputs.channel == 'aur'
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          AUR_KNOWN_HOSTS: ${{ vars.AUR_KNOWN_HOSTS }}
+        run: |
+          test -n "$AUR_SSH_PRIVATE_KEY" && test -n "$AUR_KNOWN_HOSTS" || { echo 'Configure the AUR SSH key and verified known_hosts entry first.' >&2; exit 1; }
+          umask 077
+          printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > "$RUNNER_TEMP/aur-key"
+          printf '%s\n' "$AUR_KNOWN_HOSTS" > "$RUNNER_TEMP/aur-known-hosts"
+          trap 'rm -f "$RUNNER_TEMP/aur-key" "$RUNNER_TEMP/aur-known-hosts"' EXIT
+          export GIT_SSH_COMMAND="ssh -i $RUNNER_TEMP/aur-key -o IdentitiesOnly=yes -o UserKnownHostsFile=$RUNNER_TEMP/aur-known-hosts -o StrictHostKeyChecking=yes"
+          git clone ssh://aur@aur.archlinux.org/judgement-bin.git aur
+          cp packages/PKGBUILD packages/.SRCINFO aur/
+          cd aur
+          git config user.name Mentioum
+          git config user.email 'Mentioum@users.noreply.github.com'
+          git add PKGBUILD .SRCINFO
+          if ! git diff --cached --quiet; then
+            git commit -m "Update judgement-bin to $RELEASE_TAG"
+            git push origin HEAD:master
+          fi

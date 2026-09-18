@@ -1,0 +1,18 @@
+{
+  "name": "@mentioum/judgement",
+  "version": "0.0.0",
+  "description": "Structured AI decisions for agents and scripts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mentioum/judgement.git"
+  },
+  "homepage": "https://github.com/Mentioum/judgement",
+  "bugs": "https://github.com/Mentioum/judgement/issues",
+  "bin": { "judgement": "cli.cjs" },
+  "files": ["cli.cjs", "native/", "docs/", "LICENSE", "README.md"],
+  "engines": { "node": ">=22" },
+  "os": ["darwin", "linux", "win32"],
+  "cpu": ["x64", "arm64"],
+  "publishConfig": { "access": "public" }
+}

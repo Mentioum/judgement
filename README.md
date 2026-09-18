@@ -34,7 +34,22 @@ For Go users (Go 1.23 or newer):
 go install github.com/Mentioum/judgement/cmd/judgement@latest
 ```
 
-Or build a local checkout:
+### Package managers
+
+Support is prepared for npm, Homebrew, and AUR. **These channels are not yet
+published**; the commands below become available after the first package release:
+
+```sh
+npm install -g @mentioum/judgement     # Node.js 22+, no Go required
+brew install mentioum/tap/judgement   # macOS/Linux; Homebrew builds from source
+yay -S judgement-bin                 # Arch Linux, using an AUR helper
+```
+
+npm also supports `npx @mentioum/judgement describe`. All three install the same
+`judgement` command and use the same environment variables and JSON contracts.
+See [package publishing and setup](docs/releases.md) for current prerequisites.
+
+### Build locally
 
 ```sh
 go build -o bin/judgement ./cmd/judgement
