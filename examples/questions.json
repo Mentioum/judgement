@@ -1,0 +1,12 @@
+{
+  "refund_requested": {
+    "type": "noul",
+    "instructions": "Does the customer request a refund?",
+    "criteria": {"true": {"evidence": "Explicit request to return a payment"}, "false": "No refund request"}
+  },
+  "team": {
+    "type": "choice",
+    "instructions": {"task": "Select the most appropriate team", "fallback": "Use other if no listed team fits"},
+    "criteria": {"billing": ["payments", "refunds"], "support": "Product problems", "other": null}
+  }
+}

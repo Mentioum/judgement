@@ -1,0 +1,2 @@
+{"id":"ticket-1","request":{"state":"Please refund the duplicate charge.","questions":{"refund":{"type":"noul","instructions":"Is a refund requested?"}}}}
+{"id":"ticket-2","request":{"state":"How do I change my password?","questions":{"refund":{"type":"noul","instructions":"Is a refund requested?"}}}}
