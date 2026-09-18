@@ -1,0 +1,44 @@
+version: 2
+project_name: judgement
+
+builds:
+  - id: judgement
+    main: ./cmd/judgement
+    binary: judgement
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/Mentioum/judgement/internal/cli.Version={{ .Version }}
+
+archives:
+  - id: binaries
+    ids: [judgement]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - docs/cli.md
+      - docs/agents.md
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
+
+release:
+  github:
+    owner: Mentioum
+    name: judgement
+  draft: true
+  prerelease: auto
+  name_template: "Judgement {{ .Version }}"

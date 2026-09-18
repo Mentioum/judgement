@@ -17,7 +17,10 @@ import (
 	judgement "github.com/Mentioum/judgement"
 )
 
-const Version = "0.1.1"
+// Version is overridden by GoReleaser for release and snapshot builds.
+// Keep the source default current for users installing with go install.
+var Version = "0.1.1"
+
 const help = `judgement — Jev decisions for agents and scripts
 
 Commands:

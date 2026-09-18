@@ -21,7 +21,14 @@ TypeSafe endpoints; it does not translate other providers' APIs.
 
 ## Install
 
-Requires Go 1.23 or newer.
+Download the archive for your operating system and architecture from
+[GitHub Releases](https://github.com/Mentioum/judgement/releases/latest).
+Choose `arm64` for Apple Silicon or other ARM machines, or `amd64` for Intel/AMD
+64-bit machines. Extract it and put `judgement` (`judgement.exe` on Windows) in a
+directory on your `PATH`. These binaries do not require Go. Releases include
+`checksums.txt` for verifying downloads.
+
+For Go users (Go 1.23 or newer):
 
 ```sh
 go install github.com/Mentioum/judgement/cmd/judgement@latest
@@ -183,7 +190,8 @@ has not been verified with an API key for this initial release.
 
 CI checks Go 1.23 and the current stable toolchain on Linux, macOS, and Windows.
 Tagged versions build downloadable binaries with checksums through the release
-workflow. See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and the
+workflow. See the [packaging and release guide](docs/releases.md),
+[contributing](CONTRIBUTING.md), [security](SECURITY.md), and the
 [changelog](CHANGELOG.md).
 
 ## API reference and scope
