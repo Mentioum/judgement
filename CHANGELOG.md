@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* Prepare npm packaging with bundled binaries and a launcher preserving stdin,
+  output, exit codes, and cancellation, without install scripts or dependencies.
+* Generate a Homebrew source formula and AUR `judgement-bin` definitions, and
+  provide an explicit publication workflow for reviewed stable releases.
+* Test npm installs on Linux/macOS/Windows, the Homebrew source build on macOS,
+  and an Arch package build with generated checksums in CI.
+
 * Replace manual release packaging with GoReleaser OSS, producing versioned
   archives and checksums for Linux, macOS, and Windows on amd64 and arm64.
 * Verify snapshot packaging and an extracted CLI in CI. Tagged builds continue
